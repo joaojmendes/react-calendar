@@ -73,7 +73,8 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
     this.onSelectEvent = this.onSelectEvent.bind(this);
     this.onSelectSlot = this.onSelectSlot.bind(this);
     this.spService = new spservices(this.props.context);
-    moment.locale(this.props.context.pageContext.cultureInfo.currentCultureName);
+    moment.locale(this.props.context.pageContext.cultureInfo.currentUICultureName);
+    console.log(this.props.context.pageContext.cultureInfo.currentUICultureName);
   }
 
 
