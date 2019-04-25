@@ -200,8 +200,9 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
               />
               <div style={{ marginTop: 20 }}>
                 <DocumentCardActivity
+
                   activity={strings.EventOwnerLabel}
-                  people={[{ name: event.ownerName, profileImageSrc: event.ownerPhoto }]}
+                  people={[{ name: event.ownerName, profileImageSrc: event.ownerPhoto, initialsColor:event.color }]}
                 />
               </div>
             </DocumentCardDetails>
@@ -225,7 +226,7 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
             {...EventInfo}
             size={PersonaSize.size24}
             presence={PersonaPresence.none}
-            coinSize={21}
+            coinSize={22}
             initialsColor={event.color}
           />
         </HoverCard>
