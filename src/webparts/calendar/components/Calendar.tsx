@@ -200,9 +200,8 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
               />
               <div style={{ marginTop: 20 }}>
                 <DocumentCardActivity
-
                   activity={strings.EventOwnerLabel}
-                  people={[{ name: event.ownerName, profileImageSrc: event.ownerPhoto, initialsColor:event.color }]}
+                  people={[{ name: event.ownerName, profileImageSrc: event.ownerPhoto, initialsColor: event.color }]}
                 />
               </div>
             </DocumentCardDetails>
@@ -219,16 +218,15 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
           type={HoverCardType.plain}
           plainCardProps={{ onRenderPlainCard: onRenderPlainCard }}
           onCardHide={(): void => {
-            console.log('I am now hidden');
           }}
         >
-          <Persona
-            {...EventInfo}
-            size={PersonaSize.size24}
-            presence={PersonaPresence.none}
-            coinSize={22}
-            initialsColor={event.color}
-          />
+            <Persona
+              {...EventInfo}
+              size={PersonaSize.size24}
+              presence={PersonaPresence.none}
+              coinSize={22}
+              initialsColor={event.color}
+            />
         </HoverCard>
       </div>
     );
@@ -270,6 +268,8 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
       borderWidth: '1.4px',
       borderStyle: 'solid',
       borderColor: event.color,
+      borderLeftWidth: '5px',
+
       display: 'block'
     };
 

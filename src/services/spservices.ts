@@ -135,10 +135,10 @@ export default class spservices {
     return results;
   }
 
-  public async getUserProfilePictureUrl(loginName:string){
-    let results:any = null;
+  public async getUserProfilePictureUrl(loginName: string) {
+    let results: any = null;
     try {
-     results = await  sp.profiles.getPropertiesFor(loginName);
+      results = await sp.profiles.getPropertiesFor(loginName);
 
     } catch (error) {
       results = null;
@@ -210,7 +210,8 @@ export default class spservices {
       if (results && results.length > 0) {
         for (const event of results) {
           const initialsArray: string[] = event.Author.Title.split(' ');
-          const initials = initialsArray[0].charAt(0) + initialsArray[initialsArray.length-1].charAt(0);
+          const initials = initialsArray[0].charAt(0) + initialsArray[initialsArray.length - 1].charAt(0);
+          const userPictureUrl = await this.getUserProfilePictureUrl(`i:0#.f|membership|${event.Author.EMail}`);
           events.push({
             id: event.ID,
             title: event.Title,
@@ -219,8 +220,8 @@ export default class spservices {
             end: new Date(moment(event.EndDate).toLocaleString()),
             location: event.Location,
             ownerEmail: event.Author.EMail,
-            ownerPhoto: await this.getUserProfilePictureUrl(`i:0#.f|membership|${event.Author.EMail}`),
-        //    ownerPhoto: `https://outlook.office365.com/owa/service.svc/s/GetPersonaPhoto?email=${event.Author.EMail}&UA=0&size=HR96x96`,
+            ownerPhoto: userPictureUrl ?
+              `https://outlook.office365.com/owa/service.svc/s/GetPersonaPhoto?email=${event.Author.EMail}&UA=0&size=HR96x96` : '',
             ownerInitial: initials,
             color: await this.colorGenerate(),
             ownerName: event.Author.Title,
