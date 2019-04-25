@@ -163,7 +163,7 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
     };
 
     const EventInfo: IPersonaSharedProps = {
-      imageInitials: '',
+      imageInitials: event.ownerInitial,
       imageUrl: event.ownerPhoto,
       text: event.title
     };
