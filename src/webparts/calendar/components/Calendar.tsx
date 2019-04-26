@@ -3,7 +3,8 @@ import styles from './Calendar.module.scss';
 import { ICalendarProps } from './ICalendarProps';
 import { ICalendarState } from './ICalendarState';
 import { escape } from '@microsoft/sp-lodash-subset';
-import BigCalendar from 'react-big-calendar';
+import BigCalendar    from 'react-big-calendar';
+
 import * as moment from 'moment';
 import * as strings from 'CalendarWebPartStrings';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -49,6 +50,8 @@ import { IPanelModelEnum } from '../../../controls/Event/IPanelModeEnum';
 import { IEventData } from './../../../services/IEventData';
 
 const localizer = BigCalendar.momentLocalizer(moment);
+
+
 
 /**
  * @export
@@ -322,6 +325,7 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
                     onSelectSlot={this.onSelectSlot}
                     components={{
                       event: this.renderEvent
+
                     }}
                     onSelectEvent={this.onSelectEvent}
                     defaultDate={moment().startOf('day').toDate()}

@@ -56,7 +56,9 @@ export default class spservices {
         ParticipantsPickerId: { results: newEvent.attendes },
         EventDate: newEvent.start,
         EndDate: newEvent.end,
-        Location: newEvent.location
+        Location: newEvent.location,
+        fAllDayEvent: false,
+        fRecurrence: false
       });
     } catch (error) {
       return Promise.reject(error);
