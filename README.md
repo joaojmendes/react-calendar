@@ -13,8 +13,9 @@ The Web Part does not show recurring events, I will work on it soon.
 
 
 
-##  Web Part  - Screenshots
-![callendar](/assets/animatevideo.gif)
+##  
+![callendar](/assets/animatevideo.gif)  
+
 
 ##  Web Part  - Screenshots
 ![callendar](/assets/screen1.png)
