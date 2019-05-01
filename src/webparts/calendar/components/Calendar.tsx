@@ -78,7 +78,6 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
 
   }
 
-
   private onDocumentCardClick(ev: React.SyntheticEvent<HTMLElement, Event>) {
     ev.preventDefault();
     ev.stopPropagation();
