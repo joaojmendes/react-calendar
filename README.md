@@ -3,7 +3,13 @@
 ## Summary
 This Web Part allows you to manage events on a calendar.
 Uses an existing calender list on any site.
-The location and name of the list is defined in the properties of the web part. 
+The location and name of the list is defined in the properties of the web part and the events to show, we need to select the start and end dates of  event date.
+
+Each category has it own color that is generated on load.
+
+The Web Part check the user permissions for View, Add, Edit and Delete events
+
+
 
 ##  Web Part  - Screenshots
 ![callendar](/assets/screen1.png)
