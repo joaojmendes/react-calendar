@@ -43,7 +43,7 @@
       "name": "Hosted workbench devstn",
       "type": "chrome",
       "request": "launch",
-      "url": "https://devstn.sharepoint.com/_layouts/workbench.aspx",
+      "url": "https://devstn.sharepoint.com/sites/pnptest/_layouts/workbench.aspx",
       "webRoot": "${workspaceRoot}",
       "sourceMaps": true,
       "sourceMapPathOverrides": {
