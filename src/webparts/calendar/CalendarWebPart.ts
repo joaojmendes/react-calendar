@@ -41,7 +41,7 @@ export default class CalendarWebPart extends BaseClientSideWebPart<ICalendarWebP
   }
 
   public render(): void {
-    this.spService = new spservices(this.context);
+
     const element: React.ReactElement<ICalendarProps> = React.createElement(
       Calendar,
       {
@@ -62,12 +62,20 @@ export default class CalendarWebPart extends BaseClientSideWebPart<ICalendarWebP
   }
 
   // onInit
-  public onInit(): Promise<void> {
+  public  async onInit(): Promise<void> {
+
+    this.spService = new spservices(this.context);
+    this.properties.siteUrl = this.context.pageContext.site.absoluteUrl;
     if (!this.properties.eventStartDate){
-      this.properties.eventStartDate = { value: moment().subtract(2,'years').startOf('month').toDate(), displayValue: moment().format('ddd MMM MM YYYY')  }
+      this.properties.eventStartDate = { value: moment().subtract(2,'years').startOf('month').toDate(), displayValue: moment().format('ddd MMM MM YYYY')};
     }
     if (!this.properties.eventEndDate){
-      this.properties.eventEndDate = { value: moment().add(20,'years').endOf('month').toDate(), displayValue: moment().format('ddd MMM MM YYYY')  }
+      this.properties.eventEndDate = { value: moment().add(20,'years').endOf('month').toDate(), displayValue: moment().format('ddd MMM MM YYYY')};
+    }
+    if (this.properties.siteUrl && !this.properties.list) {
+     const _lists = await this.loadLists();
+        this.lists = _lists;
+        this.properties.list = this.lists[0].key.toString();
     }
 
     return Promise.resolve();
@@ -109,10 +117,6 @@ export default class CalendarWebPart extends BaseClientSideWebPart<ICalendarWebP
     }
   }
 
-
-  private logError(error: any) {
-
-  }
   /**
    *
    * @private
@@ -128,8 +132,7 @@ export default class CalendarWebPart extends BaseClientSideWebPart<ICalendarWebP
       }
       // push new item value
     } catch (error) {
-      this.errorMessage = error.message;
-      this.properties.errorMessage = this.errorMessage;
+      this.errorMessage =  `${error.message} -  please check if site url if valid.` ;
       this.context.propertyPane.refresh();
     }
     return _lists;
@@ -225,8 +228,7 @@ export default class CalendarWebPart extends BaseClientSideWebPart<ICalendarWebP
         super.onPropertyPaneFieldChanged(propertyPath, oldValue, newValue);
       }
     } catch (error) {
-      this.errorMessage = error.message;
-      this.properties.errorMessage = this.errorMessage;
+      this.errorMessage =  `${error.message} -  please check if site url if valid.` ;
       this.context.propertyPane.refresh();
     }
   }
