@@ -193,7 +193,7 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
             </div>
             <DocumentCardDetails>
               <div className={styles.DocumentCardDetails}>
-                <DocumentCardTitle title={event.title} shouldTruncate={true} className={styles.DocumentCardTitle} styles={{ root: { color: event.color } }} />
+                <DocumentCardTitle title={event.title} shouldTruncate={true} className={styles.DocumentCardTitle} styles={{ root: { color: event.color} }} />
               </div>
 
               {
