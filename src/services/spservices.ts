@@ -61,7 +61,11 @@ export default class spservices {
 
       // Formula to calculate the number of  hours need to get UTC Date.
       // numberHours = (siteTimeZoneBias / 60) + (siteTimeZoneDaylightBias / 60) - currentDateTimeOffSet;
-      numberHours = (siteTimeZoneBias / 60) - currentDateTimeOffSet;
+      if ( siteTimeZoneBias >= 0 ){
+        numberHours = ((siteTimeZoneBias / 60) - currentDateTimeOffSet) + siteTimeZoneDaylightBias/60 ;
+      }else {
+        numberHours = ((siteTimeZoneBias / 60) - currentDateTimeOffSet)  ;
+      }
     }
     catch (error) {
       return Promise.reject(error);
@@ -731,7 +735,7 @@ export default class spservices {
   public async deCodeHtmlEntities(string: string) {
 
     const HtmlEntitiesMap = {
-      "'": "&apos;",
+      "'": "&#39;",
       "<": "&lt;",
       ">": "&gt;",
       " ": "&nbsp;",

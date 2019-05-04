@@ -202,7 +202,6 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
                   :
                   <span className={styles.DocumentCardTitleTime}>{moment(event.start).format('dddd')} </span>
               }
-
               <span className={styles.DocumentCardTitleTime}>{moment(event.start).format('HH:mm')}H - {moment(event.end).format('HH:mm')}H</span>
               <Icon iconName='MapPin' className={styles.locationIcon} style={{ color: event.color }} />
               <DocumentCardTitle
