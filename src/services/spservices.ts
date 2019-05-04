@@ -60,7 +60,8 @@ export default class spservices {
       siteTimeZoneDaylightBias = siteRegionalSettings.Information.DaylightBias;
 
       // Formula to calculate the number of  hours need to get UTC Date.
-      numberHours = (siteTimeZoneBias / 60) + (siteTimeZoneDaylightBias / 60) - currentDateTimeOffSet;
+     // numberHours = (siteTimeZoneBias / 60) + (siteTimeZoneDaylightBias / 60) - currentDateTimeOffSet;
+     numberHours = (siteTimeZoneBias / 60)  - currentDateTimeOffSet;
     }
     catch (error) {
       return Promise.reject(error);
@@ -85,7 +86,7 @@ export default class spservices {
       //"Title","fRecurrence", "fAllDayEvent","EventDate", "EndDate", "Description","ID", "Location","Geolocation","ParticipantsPickerId"
 
       results = await web.lists.getById(listId).items.add({
-        Title: newEvent.title,
+        Title: escape(newEvent.title),
         Description: newEvent.Description,
         Geolocation: newEvent.geolocation,
         ParticipantsPickerId: { results: newEvent.attendes },
@@ -118,12 +119,12 @@ export default class spservices {
       const web = new Web(siteUrl);
       //"Title","fRecurrence", "fAllDayEvent","EventDate", "EndDate", "Description","ID", "Location","Geolocation","ParticipantsPickerId"
       results = await web.lists.getById(listId).items.getById(updateEvent.id).update({
-        Title: updateEvent.title,
+        Title: escape(updateEvent.title),
         Description: updateEvent.Description,
         Geolocation: updateEvent.geolocation,
         ParticipantsPickerId: { results: updateEvent.attendes },
         EventDate: new Date(moment(updateEvent.start).add(siteTimeZoneHoursToUTC, 'hours').toISOString()),
-        EndDate: new Date(moment(updateEvent.end).add(siteTimeZoneHoursToUTC, 'hours').toISOString()),
+        EndDate: new Date(moment(updateEvent.end).add(siteTimeZoneHoursToUTC , 'hours').toISOString()),
         Location: updateEvent.location,
         fAllDayEvent: false,
         fRecurrence: false,
@@ -394,10 +395,10 @@ export default class spservices {
 
               events.push({
                 id: event.ID,
-                title: event.Title,
+                title: unescape(event.Title),
                 Description: event.Description,
                 //  start: moment(event.EventDate).utc().toDate().setUTCMinutes(this.siteTimeZoneOffSet),
-                start: new Date(moment(event.EventDate).subtract(siteTimeZoneHoursToUTC, 'hour').toISOString()),
+                start: new Date(moment(event.EventDate).subtract((siteTimeZoneHoursToUTC), 'hour').toISOString()),
                 // end: new Date(moment(event.EndDate).toLocaleString()),
                 end: new Date(moment(event.EndDate).subtract(siteTimeZoneHoursToUTC, 'hour').toISOString()),
                 location: event.Location,

@@ -40,10 +40,28 @@
       ]
     },
     {
-      "name": "Hosted workbench devstn",
+      "name": "Hosted workbench devstn Atlanta",
       "type": "chrome",
       "request": "launch",
       "url": "https://devstn.sharepoint.com/sites/pnptest/_layouts/workbench.aspx",
+      "webRoot": "${workspaceRoot}",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "webpack:///.././src/*": "${webRoot}/src/*",
+        "webpack:///../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../../src/*": "${webRoot}/src/*"
+      },
+      "runtimeArgs": [
+        "--remote-debugging-port=9222",
+        "-incognito"
+      ]
+    },
+    {
+      "name": "Hosted workbench devstn Autralia",
+      "type": "chrome",
+      "request": "launch",
+      "url": "https://devstn.sharepoint.com/sites/aus/_layouts/workbench.aspx",
       "webRoot": "${workspaceRoot}",
       "sourceMaps": true,
       "sourceMapPathOverrides": {
