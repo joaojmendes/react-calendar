@@ -563,6 +563,7 @@ export class Event extends React.Component<IEventProps, IEventState> {
                     label={strings.StartDateLabel}
                     onSelectDate={this.onSelectDateStart}
                     disabled={this.state.userPermissions.hasPermissionAdd || this.state.userPermissions.hasPermissionEdit ? false : true}
+
                   />
                 </div>
                 <div style={{ display: 'inline-block', verticalAlign: 'top', paddingRight: 10 }}>
