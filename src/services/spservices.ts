@@ -1,6 +1,8 @@
 // João Mendes
 // March 2019
 
+/// <reference path="./parseRecurrentEvent.d.ts"/>
+
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { sp, Fields, Web, SearchResults, Field, PermissionKind, RegionalSettings } from '@pnp/sp';
 import { graph, } from "@pnp/graph";
@@ -14,6 +16,7 @@ import { SiteUser } from "@pnp/sp/src/siteusers";
 import { IUserPermissions } from './IUserPermissions';
 import { dateAdd } from "@pnp/common";
 import { escape } from '@microsoft/sp-lodash-subset';
+import  parseRecurrentEvent   from './parseRecurrentEvent';
 
 const ADMIN_ROLETEMPLATE_ID = "62e90394-69f5-4237-9190-012177145e10"; // Global Admin TemplateRoleId
 // Class Services
@@ -94,8 +97,8 @@ export default class spservices {
         Description: newEvent.Description,
         Geolocation: newEvent.geolocation,
         ParticipantsPickerId: { results: newEvent.attendes },
-        EventDate: new Date(moment(newEvent.start).add(siteTimeZoneHoursToUTC, 'hours').toISOString()),
-        EndDate: new Date(moment(newEvent.end).add(siteTimeZoneHoursToUTC, 'hours').toISOString()),
+        EventDate: new Date(moment(newEvent.EventDate).add(siteTimeZoneHoursToUTC, 'hours').toISOString()),
+        EndDate: new Date(moment(newEvent.EndDate).add(siteTimeZoneHoursToUTC, 'hours').toISOString()),
         Location: newEvent.location,
         fAllDayEvent: false,
         fRecurrence: false,
@@ -127,8 +130,8 @@ export default class spservices {
         Description: updateEvent.Description,
         Geolocation: updateEvent.geolocation,
         ParticipantsPickerId: { results: updateEvent.attendes },
-        EventDate: new Date(moment(updateEvent.start).add(siteTimeZoneHoursToUTC, 'hours').toISOString()),
-        EndDate: new Date(moment(updateEvent.end).add(siteTimeZoneHoursToUTC, 'hours').toISOString()),
+        EventDate: new Date(moment(updateEvent.EventDate).add(siteTimeZoneHoursToUTC, 'hours').toISOString()),
+        EndDate: new Date(moment(updateEvent.EndDate).add(siteTimeZoneHoursToUTC, 'hours').toISOString()),
         Location: updateEvent.location,
         fAllDayEvent: false,
         fRecurrence: false,
@@ -360,11 +363,10 @@ export default class spservices {
       const results = await web.lists.getById(listId).renderListDataAsStream(
         {
           DatesInUtc: true,
-          ViewXml: `<View><ViewFields><FieldRef Name='Author'/><FieldRef Name='Category'/><FieldRef Name='Description'/><FieldRef Name='ParticipantsPicker'/><FieldRef Name='Geolocation'/><FieldRef Name='ID'/><FieldRef Name='EndDate'/><FieldRef Name='EventDate'/><FieldRef Name='ID'/><FieldRef Name='Location'/><FieldRef Name='Title'/><FieldRef Name='fAllDayEvent'/></ViewFields>
+          ViewXml: `<View><ViewFields><FieldRef Name='RecurrenceData'/><FieldRef Name='Duration'/><FieldRef Name='Author'/><FieldRef Name='Category'/><FieldRef Name='Description'/><FieldRef Name='ParticipantsPicker'/><FieldRef Name='Geolocation'/><FieldRef Name='ID'/><FieldRef Name='EndDate'/><FieldRef Name='EventDate'/><FieldRef Name='ID'/><FieldRef Name='Location'/><FieldRef Name='Title'/><FieldRef Name='fAllDayEvent'/><FieldRef Name='fRecurrence' /></ViewFields>
           <Query>
           <Where>
             <And>
-             <And>
               <Geq>
                 <FieldRef Name='EventDate' />
                 <Value IncludeTimeValue='false' Type='DateTime'>${moment(eventStartDate).format('YYYY-MM-DD')}</Value>
@@ -374,11 +376,6 @@ export default class spservices {
                 <Value IncludeTimeValue='false' Type='DateTime'>${moment(eventEndDate).format('YYYY-MM-DD')}</Value>
               </Leq>
               </And>
-              <Eq>
-              <FieldRef Name='fRecurrence' />
-                <Value Type='Recurrence'>0</Value>
-              </Eq>
-            </And>
           </Where>
           </Query>
           <RowLimit Paged=\"FALSE\">2000</RowLimit>
@@ -387,7 +384,8 @@ export default class spservices {
       );
 
       if (results && results.Row.length > 0) {
-        for (const event of results.Row) {
+        let event:any='';
+        for (event of results.Row) {
           const initialsArray: string[] = event.Author[0].title.split(' ');
           const initials: string = initialsArray[0].charAt(0) + initialsArray[initialsArray.length - 1].charAt(0);
           const userPictureUrl = await this.getUserProfilePictureUrl(`i:0#.f|membership|${event.Author[0].email}`);
@@ -408,9 +406,9 @@ export default class spservices {
             title: await this.deCodeHtmlEntities(event.Title),
             Description: event.Description,
             //  start: moment(event.EventDate).utc().toDate().setUTCMinutes(this.siteTimeZoneOffSet),
-            start: new Date(moment(event.EventDate).subtract((siteTimeZoneHoursToUTC), 'hour').toISOString()),
+            EventDate: new Date(moment(event.EventDate).subtract((siteTimeZoneHoursToUTC), 'hour').toISOString()),
             // end: new Date(moment(event.EndDate).toLocaleString()),
-            end: new Date(moment(event.EndDate).subtract(siteTimeZoneHoursToUTC, 'hour').toISOString()),
+            EndDate: new Date(moment(event.EndDate).subtract(siteTimeZoneHoursToUTC, 'hour').toISOString()),
             location: event.Location,
             ownerEmail: event.Author[0].email,
             ownerPhoto: userPictureUrl ?
@@ -420,11 +418,17 @@ export default class spservices {
             color: CategoryColorValue.length > 0 ? CategoryColorValue[0].color : await this.colorGenerate,
             ownerName: event.Author[0].title,
             attendes: attendees,
-            allDayEvent: false,
+            fAllDayEvent: false,
             geolocation: { Longitude: parseFloat(geolocation[0]), Latitude: parseFloat(geolocation[1]) },
-            Category: event.Category
+            Category: event.Category,
+            Duration: event.Duration,
+            RecurrenceData: event.RecurrenceData  ? await this.deCodeHtmlEntities(event.RecurrenceData): "",
+            fRecurrence: event.fRecurrence
           });
         }
+
+        let parseEvt:parseRecurrentEvent = new parseRecurrentEvent();
+        events = parseEvt.parseEvents(events,null,null);
       }
       // Return Data
       return events;

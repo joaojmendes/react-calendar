@@ -1,4 +1,4 @@
-import { IEventData } from '../../services/IEventData';
+import { IEventData } from '../../../../services/IEventData';
 import { IPanelModelEnum} from './IPanelModeEnum';
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 export interface IEventProps {

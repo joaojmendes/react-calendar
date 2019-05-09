@@ -17,8 +17,8 @@ import {
 } from 'office-ui-fabric-react';
 import { EnvironmentType } from '@microsoft/sp-core-library';
 import { mergeStyleSets } from 'office-ui-fabric-react/lib/Styling';
-import { IEventData } from '../../services/IEventData';
-import { IUserPermissions } from '../../services/IUserPermissions';
+import { IEventData } from '../../../../services/IEventData';
+import { IUserPermissions } from '../../../../services/IUserPermissions';
 import {
   DatePicker,
   DayOfWeek,
@@ -49,9 +49,9 @@ import { Editor } from 'react-draft-wysiwyg';
 import draftToHtml from 'draftjs-to-html';
 import htmlToDraft from 'html-to-draftjs';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-import spservices from '../../services/spservices';
+import spservices from '../../../../services/spservices';
 import { Map, ICoordinates, MapType } from "@pnp/spfx-controls-react/lib/Map";
-
+import { EventRecurrenceInfo} from './../../../../controls/EventRecurrenceInfo';
 
 const today: Date = new Date(Date.now());
 const DayPickerStrings: IDatePickerStrings = {
@@ -152,20 +152,21 @@ export class Event extends React.Component<IEventProps, IEventState> {
   private async onSave() {
 
     let eventData: IEventData = this.state.eventData;
+
     // All Day event ?
 
     const startDate = `${moment(this.state.startDate).format('YYYY/MM/DD')}`;
     const startTime = `${this.state.startSelectedHour.key}:${this.state.startSelectedMin.key}`;
     const startDateTime = `${startDate} ${startTime}`;
     const start = moment(startDateTime, 'YYYY/MM/DD HH:mm').toLocaleString();
-    eventData.start = new Date(start);
+    eventData.EventDate = new Date(start);
 
     // End Date
     const endDate = `${moment(this.state.endDate).format('YYYY/MM/DD')}`;
     const endTime = `${this.state.endSelectedHour.key}:${this.state.endSelectedMin.key}`;
     const endDateTime = `${endDate} ${endTime}`;
     const end = moment(endDateTime, 'YYYY/MM/DD HH:mm').toLocaleString();
-    eventData.end = new Date(end);
+    eventData.EndDate = new Date(end);
 
 
     // get Geolocation
@@ -173,7 +174,7 @@ export class Event extends React.Component<IEventProps, IEventState> {
     eventData.geolocation = { Latitude: this.latitude, Longitude: this.longitude };
     const locationInfo = await this.spService.getGeoLactionName(this.latitude, this.longitude);
     eventData.location = locationInfo ? locationInfo.display_name : 'N/A';
-    console.log('beforeupd',eventData.geolocation);
+
     // get Attendees
     if (!eventData.attendes) { //vinitialize if no attendees
       eventData.attendes = [];
@@ -236,10 +237,10 @@ export class Event extends React.Component<IEventProps, IEventState> {
     if (this.props.panelMode == IPanelModelEnum.edit && this.props.event) {
 
       // Get hours of event
-      const startHour = moment(this.props.event.start).format('HH').toString();
-      const startMin = moment(this.props.event.start).format('mm').toString();
-      const endHour = moment(this.props.event.end).format('HH').toString();
-      const endMin = moment(this.props.event.end).format('mm').toString();
+      const startHour = moment(this.props.event.EventDate).format('HH').toString();
+      const startMin = moment(this.props.event.EventDate).format('mm').toString();
+      const endHour = moment(this.props.event.EndDate).format('HH').toString();
+      const endMin = moment(this.props.event.EndDate).format('mm').toString();
 
       // Get Descript and covert to RichText Control
       const html = this.props.event.Description;
@@ -268,8 +269,8 @@ export class Event extends React.Component<IEventProps, IEventState> {
       // Update Component Data
       this.setState({
         eventData: this.props.event,
-        startDate: this.props.event.start,
-        endDate: this.props.event.end,
+        startDate: this.props.event.EventDate,
+        endDate: this.props.event.EndDate,
         startSelectedHour: { key: startHour, text: startHour },
         startSelectedMin: { key: startMin, text: startMin },
         endSelectedHour: { key: endHour, text: endHour },
@@ -763,6 +764,7 @@ export class Event extends React.Component<IEventProps, IEventState> {
               </Dialog>
             </div>
           }
+          <EventRecurrenceInfo/>
         </Panel>
       </div>
     );

@@ -1,4 +1,6 @@
 declare interface ICalendarWebPartStrings {
+  EndByLabel: string;
+  EndAfterLabel: string;
   HttpErrorMessage: string;
   CategoryPlaceHolder: string;
   CategoryLabel: string;

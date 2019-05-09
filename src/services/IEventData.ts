@@ -3,15 +3,18 @@ export interface IEventData {
   title: string;
   Description?: any;
   location?:string;
-  start: Date;
-  end: Date;
+  EventDate: Date;
+  EndDate: Date;
   color?:string;
   ownerInitial?: string;
   ownerPhoto?:string;
   ownerEmail?:string;
   ownerName?:string;
-  allDayEvent?: boolean;
+  fAllDayEvent?: boolean;
   attendes?: number[];
   geolocation?: {Longitude:number,  Latitude: number};
   Category?: string;
+  Duration?: number;
+  RecurrenceData?:string;
+  fRecurrence?:boolean;
 }

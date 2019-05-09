@@ -1,5 +1,7 @@
 define([], function() {
   return {
+    EndByLabel: "end by",
+    EndAfterLabel: "end after",
     HttpErrorMessage: "Error reading calendar events:",
     CategoryPlaceHolder: "Please select category",
     CategoryLabel: "Category",
