@@ -44,7 +44,8 @@
     "react-dom": "16.7.0",
     "react-draft-wysiwyg": "^1.13.2",
     "spfx-uifabric-themes": "^0.6.0",
-    "typescript": "^3.2.4"
+    "typescript": "^3.2.4",
+    "xml2js": "^0.4.19"
   },
   "resolutions": {
     "@types/react": "16.4.2"
@@ -57,6 +58,7 @@
     "@microsoft/sp-webpart-workbench": "1.8.0-plusbeta",
     "@types/chai": "3.4.34",
     "@types/mocha": "2.2.38",
+    "@types/xml2js": "^0.4.4",
     "@voitanos/jest-preset-spfx-react16": "^1.1.0",
     "ajv": "~5.2.2",
     "gulp": "~3.9.1",

@@ -25,7 +25,7 @@
       "name": "Hosted workbench sitenanuvem",
       "type": "chrome",
       "request": "launch",
-      "url": "https://sitenanuvem.sharepoint.com/_layouts/workbench.aspx",
+      "url": "https://sitenanuvem.sharepoint.com/sites/snportal/_layouts/workbench.aspx",
       "webRoot": "${workspaceRoot}",
       "sourceMaps": true,
       "sourceMapPathOverrides": {

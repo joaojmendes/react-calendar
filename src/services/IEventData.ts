@@ -1,5 +1,6 @@
 export interface IEventData {
-  id?:number;
+  Id?:number;
+  ID?:number;
   title: string;
   Description?: any;
   location?:string;
@@ -16,5 +17,9 @@ export interface IEventData {
   Category?: string;
   Duration?: number;
   RecurrenceData?:string;
-  fRecurrence?:boolean;
+  fRecurrence?:string | boolean;
+  EventType?:string;
+  UID?:string;
+  RecurrenceID?: string;
+  MasterSeriesItemID?: string;
 }

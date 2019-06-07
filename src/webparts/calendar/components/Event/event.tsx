@@ -37,7 +37,9 @@ import {
   Dialog,
   DialogType,
   DialogFooter,
-  Toggle
+  Toggle,
+  ActionButton,
+  IButtonProps
 
 }
   from 'office-ui-fabric-react';
@@ -51,7 +53,10 @@ import htmlToDraft from 'html-to-draftjs';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import spservices from '../../../../services/spservices';
 import { Map, ICoordinates, MapType } from "@pnp/spfx-controls-react/lib/Map";
-import { EventRecurrenceInfo} from './../../../../controls/EventRecurrenceInfo';
+import { EventRecurrenceInfo } from '../../../../controls/EventRecurrenceInfo/EventRecurrenceInfo';
+import { EventRecurrenceInfoDaily } from '../../../../controls/EventRecurrenceInfoDaily/EventRecurrenceInfoDaily';
+import { string } from 'prop-types';
+import { getGUID } from '@pnp/common';
 
 const today: Date = new Date(Date.now());
 const DayPickerStrings: IDatePickerStrings = {
@@ -74,6 +79,7 @@ export class Event extends React.Component<IEventProps, IEventState> {
   private attendees: IPersonaProps[] = [];
   private latitude: number = 41.1931819;
   private longitude: number = -8.4897452;
+  private returnedRecurrenceInfo: { recurrenceData: string, eventDate: Date, endDate: Date } = undefined;
 
   private categoryDropdownOption: IDropdownOption[] = [];
 
@@ -93,7 +99,6 @@ export class Event extends React.Component<IEventProps, IEventState> {
     }
     // Initialize Map coordinates
 
-    console.log('ini', this.latitude, this.longitude);
     this.state = {
       showPanel: false,
       eventData: this.props.event,
@@ -112,6 +117,10 @@ export class Event extends React.Component<IEventProps, IEventState> {
       displayDialog: false,
       isloading: false,
       siteRegionalSettings: undefined,
+      recurrenceSeriesEdited: false,
+      showRecurrenceSeriesInfo:false,
+      newRecurrenceEvent:false,
+      recurrenceAction: 'display',
       userPermissions: { hasPermissionAdd: false, hasPermissionDelete: false, hasPermissionEdit: false, hasPermissionView: false },
     };
     // local copia of props
@@ -133,6 +142,8 @@ export class Event extends React.Component<IEventProps, IEventState> {
     this.confirmDelete = this.confirmDelete.bind(this);
     this.onAllDayEventChange = this.onAllDayEventChange.bind(this);
     this.onCategoryChanged = this.onCategoryChanged.bind(this);
+    this.onEditRecurrence = this.onEditRecurrence.bind(this);
+    this.returnRecurrenceInfo = this.returnRecurrenceInfo.bind(this);
     this.spService = new spservices(this.props.context);
   }
   /**
@@ -152,17 +163,43 @@ export class Event extends React.Component<IEventProps, IEventState> {
   private async onSave() {
 
     let eventData: IEventData = this.state.eventData;
+    let panelMode = this.props.panelMode;
+
+    let startDate: string = null;
+    let endDate: string = null;
+    // if there are new Event recurrence or Edited recurrence series
+    if (this.state.recurrenceSeriesEdited || this.state.newRecurrenceEvent) {
+      eventData.RecurrenceData = this.returnedRecurrenceInfo.recurrenceData;
+      startDate = `${moment(this.returnedRecurrenceInfo.eventDate).format('YYYY/MM/DD')}`;
+      endDate = `${moment(this.returnedRecurrenceInfo.endDate).format('YYYY/MM/DD')}`;
+
+      if (eventData.EventType == "0" && this.state.newRecurrenceEvent) {
+        eventData.EventType = "1";
+        eventData.fRecurrence= true;
+        eventData.UID = getGUID();
+      }
+
+    } else {
+      if (this.state.eventData.EventType  == '1'){ // recurrence exception
+        eventData.RecurrenceID = eventData.EventDate.toISOString();
+        eventData.MasterSeriesItemID = eventData.ID.toString();
+        eventData.EventType = "4";
+        eventData.fRecurrence= true;
+        panelMode = IPanelModelEnum.add;
+      }
+      startDate = `${moment(this.state.startDate).format('YYYY/MM/DD')}`;
+      endDate = `${moment(this.state.endDate).format('YYYY/MM/DD')}`;
+    }
+
 
     // All Day event ?
 
-    const startDate = `${moment(this.state.startDate).format('YYYY/MM/DD')}`;
+
     const startTime = `${this.state.startSelectedHour.key}:${this.state.startSelectedMin.key}`;
     const startDateTime = `${startDate} ${startTime}`;
     const start = moment(startDateTime, 'YYYY/MM/DD HH:mm').toLocaleString();
     eventData.EventDate = new Date(start);
-
     // End Date
-    const endDate = `${moment(this.state.endDate).format('YYYY/MM/DD')}`;
     const endTime = `${this.state.endSelectedHour.key}:${this.state.endSelectedMin.key}`;
     const endDateTime = `${endDate} ${endTime}`;
     const end = moment(endDateTime, 'YYYY/MM/DD HH:mm').toLocaleString();
@@ -186,13 +223,13 @@ export class Event extends React.Component<IEventProps, IEventState> {
     try {
       for (const user of this.attendees) {
 
-        const userInfo: any= await this.spService.getUserByLoginName(user.id, this.props.siteUrl);
+        const userInfo: any = await this.spService.getUserByLoginName(user.id, this.props.siteUrl);
         eventData.attendes.push(parseInt(userInfo.Id));
       }
 
       this.setState({ isSaving: true });
 
-      switch (this.props.panelMode) {
+      switch (panelMode) {
         case IPanelModelEnum.edit:
           await this.spService.updateEvent(eventData, this.props.siteUrl, this.props.listId);
           break;
@@ -217,16 +254,22 @@ export class Event extends React.Component<IEventProps, IEventState> {
    * @memberof Event
    */
   public componentDidCatch(error: any, errorInfo: any) {
-    this.setState({ hasError: true, errorMessage: errorInfo.componentStack });
+    this.setState({ hasError: true, errorMessage: errorInfo.message });
   }
+
   /**
    *
    *
+   * @private
+   * @param {number} [eventId]
    * @memberof Event
    */
-  public async componentDidMount() {
+  private async  renderEventData(eventId?: number) {
+
     this.setState({ isloading: true });
-    let editorState:EditorState;
+    const event: IEventData = !eventId ? this.props.event : await this.spService.getEvent(this.props.siteUrl, this.props.listId, eventId);
+
+    let editorState: EditorState;
     // Load Regional Settings
     const siteRegionalSettigns = await this.spService.getSiteRegionalSettingsTimeZone(this.props.siteUrl);
     // chaeck User list Permissions
@@ -234,16 +277,16 @@ export class Event extends React.Component<IEventProps, IEventState> {
     // Load Categories
     this.categoryDropdownOption = await this.spService.getChoiceFieldOptions(this.props.siteUrl, this.props.listId, 'Category');
     // Edit Mode ?
-    if (this.props.panelMode == IPanelModelEnum.edit && this.props.event) {
+    if (this.props.panelMode == IPanelModelEnum.edit && event) {
 
       // Get hours of event
-      const startHour = moment(this.props.event.EventDate).format('HH').toString();
-      const startMin = moment(this.props.event.EventDate).format('mm').toString();
-      const endHour = moment(this.props.event.EndDate).format('HH').toString();
-      const endMin = moment(this.props.event.EndDate).format('mm').toString();
+      const startHour = moment(event.EventDate).format('HH').toString();
+      const startMin = moment(event.EventDate).format('mm').toString();
+      const endHour = moment(event.EndDate).format('HH').toString();
+      const endMin = moment(event.EndDate).format('mm').toString();
 
       // Get Descript and covert to RichText Control
-      const html = this.props.event.Description;
+      const html = event.Description;
       const contentBlock = htmlToDraft(html);
 
       if (contentBlock) {
@@ -252,7 +295,7 @@ export class Event extends React.Component<IEventProps, IEventState> {
       }
 
       // testa  attendees
-      const attendees = this.props.event.attendes;
+      const attendees = event.attendes;
       let selectedUsers: string[] = [];
       if (attendees && attendees.length > 0) {
         for (const userId of attendees) {
@@ -263,14 +306,14 @@ export class Event extends React.Component<IEventProps, IEventState> {
         }
       }
       // Has geolocation ?
-        this.latitude = this.props.event.geolocation && this.props.event.geolocation.Latitude ? this.props.event.geolocation.Latitude : this.latitude;
-        this.longitude = this.props.event.geolocation && this.props.event.geolocation.Longitude ? this.props.event.geolocation.Longitude : this.longitude;
+      this.latitude = event.geolocation && event.geolocation.Latitude ? event.geolocation.Latitude : this.latitude;
+      this.longitude = event.geolocation && event.geolocation.Longitude ? event.geolocation.Longitude : this.longitude;
 
       // Update Component Data
       this.setState({
-        eventData: this.props.event,
-        startDate: this.props.event.EventDate,
-        endDate: this.props.event.EndDate,
+        eventData: event,
+        startDate: event.EventDate,
+        endDate: event.EndDate,
         startSelectedHour: { key: startHour, text: startHour },
         startSelectedMin: { key: startMin, text: startMin },
         endSelectedHour: { key: endHour, text: endHour },
@@ -292,24 +335,30 @@ export class Event extends React.Component<IEventProps, IEventState> {
         userPermissions: userListPermissions,
         isloading: false,
         siteRegionalSettings: siteRegionalSettigns,
+        eventData: { ...event, EventType: "0" },
       });
     }
   }
 
+
   /**
+   *
    *
    * @memberof Event
    */
-  public componentWillMount() {
+  public async componentDidMount() {
 
+
+    await this.renderEventData();
   }
+
+
 
   /**
    * @private
    * @memberof Event
    */
   private onStartChangeHour = (ev: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void => {
-    ev.preventDefault();
     this.setState({ startSelectedHour: item });
   }
 
@@ -318,7 +367,7 @@ export class Event extends React.Component<IEventProps, IEventState> {
    * @memberof Event
    */
   private onEndChangeHour = (ev: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void => {
-    ev.preventDefault();
+
     this.setState({ endSelectedHour: item });
   }
 
@@ -327,7 +376,7 @@ export class Event extends React.Component<IEventProps, IEventState> {
    * @memberof Event
    */
   private onStartChangeMin = (ev: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void => {
-    ev.preventDefault();
+
     this.setState({ startSelectedMin: item });
   }
 
@@ -376,7 +425,7 @@ export class Event extends React.Component<IEventProps, IEventState> {
    * @memberof Event
    */
   private onEndChangeMin(ev: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
-    ev.preventDefault();
+
     this.setState({ endSelectedMin: item });
   }
 
@@ -389,7 +438,7 @@ export class Event extends React.Component<IEventProps, IEventState> {
    * @memberof Event
    */
   private onCategoryChanged(ev: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void {
-    ev.preventDefault();
+
     this.setState({ eventData: { ...this.state.eventData, Category: item.text } });
   }
 
@@ -415,6 +464,13 @@ export class Event extends React.Component<IEventProps, IEventState> {
     this.setState({ displayDialog: false });
   }
 
+  /**
+   *
+   *
+   * @private
+   * @param {React.MouseEvent<HTMLDivElement>} ev
+   * @memberof Event
+   */
   private async confirmDelete(ev: React.MouseEvent<HTMLDivElement>) {
     ev.preventDefault();
     try {
@@ -447,16 +503,22 @@ export class Event extends React.Component<IEventProps, IEventState> {
         </DefaultButton>
         {
           this.props.panelMode == IPanelModelEnum.edit && this.state.userPermissions.hasPermissionDelete && (
-            <DefaultButton onClick={this.onDelete} style={{ marginBottom: '15px', marginRight: '8px', float: 'right' }}>
+            <DefaultButton
+
+              onClick={this.onDelete}
+              style={{ marginBottom: '15px', marginRight: '8px', float: 'right' }}>
               {strings.DeleteButtonLabel}
             </DefaultButton>
           )
         }
         {
           (this.state.userPermissions.hasPermissionAdd || this.state.userPermissions.hasPermissionEdit) &&
-            <PrimaryButton disabled={this.state.disableButton} onClick={this.onSave} style={{ marginBottom: '15px', marginRight: '8px', float: 'right' }}>
-              {strings.SaveButtonLabel}
-            </PrimaryButton>
+          <PrimaryButton
+            disabled={this.state.disableButton}
+            onClick={this.onSave}
+            style={{ marginBottom: '15px', marginRight: '8px', float: 'right' }}>
+            {strings.SaveButtonLabel}
+          </PrimaryButton>
 
         }
         {
@@ -487,6 +549,14 @@ export class Event extends React.Component<IEventProps, IEventState> {
   }
 
 
+  /**
+   *
+   *
+   * @private
+   * @param {React.MouseEvent<HTMLElement>} ev
+   * @param {boolean} checked
+   * @memberof Event
+   */
   private onAllDayEventChange(ev: React.MouseEvent<HTMLElement>, checked: boolean) {
     ev.preventDefault();
     this.setState({ eventData: { ...this.state.eventData, allDayEvent: checked } });
@@ -500,13 +570,38 @@ export class Event extends React.Component<IEventProps, IEventState> {
   private async onUpdateCoordinates(coordinates: ICoordinates) {
     this.latitude = coordinates.latitude;
     this.longitude = coordinates.longitude;
-    console.log('upcoor',this.latitude + ' ' + this.longitude);
     const locationInfo = await this.spService.getGeoLactionName(this.latitude, this.longitude);
     this.setState({ eventData: { ...this.state.eventData, location: locationInfo.display_name } });
   }
 
+  /**
+   *
+   *
+   * @private
+   * @param {React.MouseEvent<HTMLButtonElement>} ev
+   * @memberof Event
+   */
+  private async onEditRecurrence(ev: React.MouseEvent<HTMLButtonElement>) {
+    ev.preventDefault();
+    // EventType = 4 Recurrence Exception
+    await this.renderEventData(this.state.eventData.EventType == '4' ? Number(this.state.eventData.MasterSeriesItemID) : this.state.eventData.Id);
+    this.setState({ showRecurrenceSeriesInfo: true, recurrenceSeriesEdited: true });
+  }
+
+  public async returnRecurrenceInfo(startDate: Date, recurrenceData: string) {
+    this.returnedRecurrenceInfo = { recurrenceData: recurrenceData, eventDate: startDate, endDate: moment().add(20, 'years').toDate() };
+    //this.setState({ editRecurrenceSeries:false})
+    console.log(this.returnedRecurrenceInfo);
+  }
+
+  /**
+   *
+   *
+   * @returns {React.ReactElement<IEventProps>}
+   * @memberof Event
+   */
   public render(): React.ReactElement<IEventProps> {
-    console.log(this.state.locationLatitude + '-' + this.state.locationLongitude);
+
     const { editorState } = this.state;
     return (
       <div>
@@ -533,7 +628,23 @@ export class Event extends React.Component<IEventProps, IEventState> {
             {
               !this.state.isloading &&
               <div>
-                <div>
+                {
+                  (this.state.eventData && (this.state.eventData.EventType !== "0" && this.state.showRecurrenceSeriesInfo !== true)) ?
+                  <div>
+                      <h2 style={{ display: 'inline-block', verticalAlign: 'top' }}>Recurrence Event</h2>
+                      <DefaultButton
+                        style={{ display: 'inline-block', marginLeft: '330px', verticalAlign: 'top', width: 'auto' }}
+                        iconProps={{ iconName: 'RecurringEvent' }}
+                        allowDisabledFocus={true}
+                        onClick={this.onEditRecurrence}
+                      >
+                        Edit Recurrence Series
+                     </DefaultButton>
+
+                    </div>
+                    : ''
+                }
+                <div style={{ marginTop: 10 }} >
                   <TextField
                     label={strings.EventTitleLabel}
                     value={this.state.eventData ? this.state.eventData.title : ''}
@@ -564,7 +675,7 @@ export class Event extends React.Component<IEventProps, IEventState> {
                     label={strings.StartDateLabel}
                     onSelectDate={this.onSelectDateStart}
                     disabled={this.state.userPermissions.hasPermissionAdd || this.state.userPermissions.hasPermissionEdit ? false : true}
-
+                    hidden={this.state.showRecurrenceSeriesInfo}
                   />
                 </div>
                 <div style={{ display: 'inline-block', verticalAlign: 'top', paddingRight: 10 }}>
@@ -635,6 +746,7 @@ export class Event extends React.Component<IEventProps, IEventState> {
                     label={strings.EndDateLabel}
                     onSelectDate={this.onSelectDateEnd}
                     disabled={this.state.userPermissions.hasPermissionAdd || this.state.userPermissions.hasPermissionEdit ? false : true}
+                    hidden={this.state.showRecurrenceSeriesInfo}
                   />
                 </div>
                 <div style={{ display: 'inline-block', verticalAlign: 'top', paddingRight: 10 }}>
@@ -696,7 +808,42 @@ export class Event extends React.Component<IEventProps, IEventState> {
                 </div>
                 <Label>{this.state.siteRegionalSettings ? this.state.siteRegionalSettings.Description : ''}</Label>
                 <br />
-                <Label>Event Description</Label>
+                {
+
+                  this.state.eventData && (this.state.eventData.EventType == "0") ?
+                    <div style={{ display: 'inline-block', verticalAlign: 'top', width: '200px' }}>
+                      <Toggle
+                        defaultChecked={false}
+                        inlineLabel={true}
+                        label="Recurrence ?"
+                        onText="On"
+                        offText="Off"
+                        onChange={(ev, checked: boolean) => {
+                          ev.preventDefault();
+                          this.setState({ showRecurrenceSeriesInfo: checked, newRecurrenceEvent: checked });
+                        }}
+                      />
+                    </div>
+                    :
+                    ''
+                }
+
+                {
+                  this.state.showRecurrenceSeriesInfo && (
+                    <EventRecurrenceInfo
+                      context={this.props.context}
+                      display={true}
+                      recurrenceData={this.state.eventData.RecurrenceData}
+                      startDate={this.state.eventData.EventDate}
+                      siteUrl={this.props.siteUrl}
+                      returnRecurrenceData={this.returnRecurrenceInfo}
+                    >
+
+                    </EventRecurrenceInfo>
+                  )
+                }
+
+                < Label > Event Description</Label>
 
                 <div className={styles.description}>
                   <Editor
@@ -762,9 +909,12 @@ export class Event extends React.Component<IEventProps, IEventState> {
                   <DefaultButton onClick={this.closeDialog} text={strings.DialogCloseButtonLabel} />
                 </DialogFooter>
               </Dialog>
+
+
             </div>
+
           }
-          <EventRecurrenceInfo/>
+
         </Panel>
       </div>
     );
