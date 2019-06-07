@@ -132,7 +132,7 @@ export class EventRecurrenceInfoMonthly extends React.Component<IEventRecurrence
       let errorMessage = '';
       if (Number(value.trim()) == 0 || Number(value.trim()) > 31) {
         value = '1 ';
-        errorMessage = 'Alowed values 1 to 31';
+        errorMessage = 'Allowed values 1 to 31';
       }
       this.setState({ dayOfMonth: value, errorMessageDayOfMonth: errorMessage });
       this.applyRecurrence();
@@ -165,7 +165,7 @@ export class EventRecurrenceInfoMonthly extends React.Component<IEventRecurrence
       let errorMessage = '';
       if (Number(value.trim()) == 0 || Number(value.trim()) > 12) {
         value = '1 ';
-        errorMessage = 'Alowed values 1 to 12';
+        errorMessage = 'Allowed values 1 to 12';
       }
       this.setState({ everyNumberOfMonths: value, errorMessageNumberOfMonth: errorMessage });
       this.applyRecurrence();
@@ -187,7 +187,7 @@ export class EventRecurrenceInfoMonthly extends React.Component<IEventRecurrence
       let errorMessage = '';
       if (Number(value.trim()) == 0 || Number(value.trim()) > 12) {
         value = '1 ';
-        errorMessage = 'Alowed values 1 to 12';
+        errorMessage = 'Allowed values 1 to 12';
       }
       this.setState({ everyNumberOfMonthsWeekDay: value, errorMessageNumberOfMonthWeekDay: errorMessage });
       this.applyRecurrence();
@@ -227,7 +227,6 @@ export class EventRecurrenceInfoMonthly extends React.Component<IEventRecurrence
     });
     this.applyRecurrence();
   }
-
 
   /**
    *
@@ -365,7 +364,7 @@ export class EventRecurrenceInfoMonthly extends React.Component<IEventRecurrence
         selectPatern: patern.monthly ? 'monthly' : 'monthlyByDay',
         dayOfMonth: monthlyPatern.day ? monthlyPatern.day : '1',
         everyNumberOfMonths: monthlyPatern.monthFrequency ?  monthlyPatern.monthFrequency : monthlyByDayPatern.monthFrequency ,
-        everyNumberOfMonthsWeekDay: monthlyByDayPatern.monthFrequency,
+        everyNumberOfMonthsWeekDay: monthlyByDayPatern.monthFrequency ?  monthlyByDayPatern.monthFrequency : '1',
         selectedWeekOrderMonth: monthlyByDayPatern.weekdayOfMonth ? monthlyByDayPatern.weekdayOfMonth : 'first',
         selectedWeekDay: monthlyByDayPatern.weekDay,
         disableDayOfMonth: patern.monthly ? false : true,

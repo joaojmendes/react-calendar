@@ -135,7 +135,7 @@ export class EventRecurrenceInfoWeekly extends React.Component<IEventRecurrenceI
       let errorMessage:string ='';
       if (Number(value.trim()) == 0 || Number(value.trim()) > 255) {
         value = '1  ';
-        errorMessage = 'Alowed values 1 to 255';
+        errorMessage = 'Allowed values 1 to 255';
       }
       this.setState({  numberOfWeeks: value , errorMessageNumberOfWeeks: errorMessage  });
       this.applyRecurrence();

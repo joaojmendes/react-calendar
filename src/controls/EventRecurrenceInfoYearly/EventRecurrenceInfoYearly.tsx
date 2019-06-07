@@ -131,7 +131,7 @@ export class EventRecurrenceInfoYearly extends React.Component<IEventRecurrenceI
       let errorMessage = '';
       if (Number(value.trim()) == 0 || Number(value.trim()) > 31) {
         value = '1 ';
-        errorMessage = 'Alowed values 1 to 31';
+        errorMessage = 'Allowed values 1 to 31';
       }
       this.setState({ dayOfMonth: value, errorMessageDayOfMonth: errorMessage });
       this.applyRecurrence();
@@ -143,7 +143,6 @@ export class EventRecurrenceInfoYearly extends React.Component<IEventRecurrenceI
   private onMonthChange(ev: React.SyntheticEvent<HTMLElement>, item: IDropdownOption){
     this.setState({  selectedMonth: item.key });
     this.applyRecurrence();
-
   }
 
   /**

@@ -123,7 +123,7 @@ export class EventRecurrenceInfoDaily extends React.Component<IEventRecurrenceIn
 
       if (Number(value.trim()) == 0 || Number(value.trim()) > 255) {
         value = '1  ';
-        errorMessage = 'Alowed values 1 to 255';
+        errorMessage = 'Allowed values 1 to 255';
       }
       this.setState({ numberOfDays: value, errorMessageNumberOfDays: errorMessage  });
       this.applyRecurrence();
@@ -147,7 +147,7 @@ export class EventRecurrenceInfoDaily extends React.Component<IEventRecurrenceIn
 
       if (Number(value.trim()) == 0 || Number(value.trim()) > 999) {
         value = '1  ';
-        errorMessage = 'Alowed values 1 to 999';
+        errorMessage = 'Allowed values 1 to 999';
       }
       this.setState({  numberOcurrences: value , errorMessageNumberOcurrences: errorMessage  });
       this.applyRecurrence();

@@ -135,7 +135,7 @@ export class EventRecurrenceInfo extends React.Component<IEventRecurrenceInfoPro
               {
                 key: 'yearly',
                 iconProps: { iconName: 'Calendar' },
-                text: 'yearly',
+                text: 'Yearly',
               }
             ]}
             onChange={this._onRecurrenceFrequenceChange}
