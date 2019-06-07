@@ -140,7 +140,6 @@ export class Event extends React.Component<IEventProps, IEventState> {
     this.onDelete = this.onDelete.bind(this);
     this.closeDialog = this.closeDialog.bind(this);
     this.confirmDelete = this.confirmDelete.bind(this);
-    this.onAllDayEventChange = this.onAllDayEventChange.bind(this);
     this.onCategoryChanged = this.onCategoryChanged.bind(this);
     this.onEditRecurrence = this.onEditRecurrence.bind(this);
     this.returnRecurrenceInfo = this.returnRecurrenceInfo.bind(this);
@@ -192,9 +191,6 @@ export class Event extends React.Component<IEventProps, IEventState> {
     }
 
 
-    // All Day event ?
-
-
     const startTime = `${this.state.startSelectedHour.key}:${this.state.startSelectedMin.key}`;
     const startDateTime = `${startDate} ${startTime}`;
     const start = moment(startDateTime, 'YYYY/MM/DD HH:mm').toLocaleString();
@@ -224,7 +220,7 @@ export class Event extends React.Component<IEventProps, IEventState> {
       for (const user of this.attendees) {
 
         const userInfo: any = await this.spService.getUserByLoginName(user.id, this.props.siteUrl);
-        eventData.attendes.push(parseInt(userInfo.Id));
+        eventData.attendes.push(Number(userInfo.Id));
       }
 
       this.setState({ isSaving: true });
@@ -431,7 +427,6 @@ export class Event extends React.Component<IEventProps, IEventState> {
 
   /**
    *
-   *
    * @private
    * @param {React.FormEvent<HTMLDivElement>} ev
    * @param {IDropdownOption} item
@@ -549,18 +544,7 @@ export class Event extends React.Component<IEventProps, IEventState> {
   }
 
 
-  /**
-   *
-   *
-   * @private
-   * @param {React.MouseEvent<HTMLElement>} ev
-   * @param {boolean} checked
-   * @memberof Event
-   */
-  private onAllDayEventChange(ev: React.MouseEvent<HTMLElement>, checked: boolean) {
-    ev.preventDefault();
-    this.setState({ eventData: { ...this.state.eventData, allDayEvent: checked } });
-  }
+
   /**
    *
    * @private
@@ -909,8 +893,6 @@ export class Event extends React.Component<IEventProps, IEventState> {
                   <DefaultButton onClick={this.closeDialog} text={strings.DialogCloseButtonLabel} />
                 </DialogFooter>
               </Dialog>
-
-
             </div>
 
           }
