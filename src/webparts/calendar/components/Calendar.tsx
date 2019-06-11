@@ -46,8 +46,8 @@ import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { DisplayMode } from '@microsoft/sp-core-library';
 import spservices from '../../../services/spservices';
 import { stringIsNullOrEmpty } from '@pnp/common';
-import { Event } from './Event/event';
-import { IPanelModelEnum } from './Event/IPanelModeEnum';
+import { Event } from '../../../controls/Event/event';
+import { IPanelModelEnum } from '../../../controls/Event/IPanelModeEnum';
 import { IEventData } from './../../../services/IEventData';
 import { IUserPermissions } from './../../../services/IUserPermissions';
 const localizer = BigCalendar.momentLocalizer(moment);
@@ -301,7 +301,7 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
       <Customizer {...FluentCustomizations}>
 
 
-      <div className={styles.calendar}>
+      <div className={styles.calendar} style={{backgroundColor: 'white', padding: '20px'}}>
         <WebPartTitle displayMode={this.props.displayMode}
           title={this.props.title}
           updateProperty={this.props.updateProperty} />
